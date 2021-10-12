@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="AutocompleteStyle" parent="@style/Widget.AppCompat.TextView">
+        <item name="fontFamily">@font/roboto_regular</item>
+        <item name="android:textSize">16sp</item>
+        <item name="color">@color/autocompleteColor</item>
+    </style>
+
+    <style name="NoLocation" parent="@style/Widget.AppCompat.TextView">
+        <item name="fontFamily">@font/roboto_medium</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:textColor">#838383</item>
+    </style>
+
+    <style name="Temperature" parent="@style/Widget.AppCompat.TextView">
+        <item name="fontFamily">@font/roboto_bold</item>
+        <item name="android:textSize">100sp</item>
+        <item name="android:textColor">#838383</item>
+    </style>
+
+    <style name="CityName" parent="@style/Widget.AppCompat.TextView">
+        <item name="fontFamily">@font/roboto_bold</item>
+        <item name="android:textSize">25sp</item>
+        <item name="android:textColor">#838383</item>
+    </style>
+
+    <style name="FeelsLike" parent="@style/Widget.AppCompat.TextView">
+        <item name="fontFamily">@font/roboto_medium</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+</resources>
