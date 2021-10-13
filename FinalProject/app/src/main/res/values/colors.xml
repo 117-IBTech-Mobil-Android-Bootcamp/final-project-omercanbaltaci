@@ -8,4 +8,5 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="autocompleteColor">#CAC7C7</color>
+    <color name="appDarkGray">#838383</color>
 </resources>

@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import androidx.viewpager.widget.PagerAdapter
 
 class CustomPagerAdapter(private val context: Context) : PagerAdapter() {
-    private val items = mutableListOf<ViewPagerItem>()
+    private val items = mutableListOf<BaseViewPagerItem>()
 
-    fun addAll(items: List<ViewPagerItem>) {
+    fun addAll(items: List<BaseViewPagerItem>) {
         this.items.addAll(items)
     }
 

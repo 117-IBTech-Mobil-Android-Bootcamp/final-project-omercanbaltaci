@@ -1,6 +1,7 @@
 package com.example.finalproject
 
 import android.app.Application
+import com.example.finalproject.di.adapterModule
 import com.example.finalproject.di.networkModule
 import com.example.finalproject.di.repositoryModule
 import com.example.finalproject.di.viewModelModule
@@ -12,7 +13,7 @@ class Application : Application() {
         super.onCreate()
         startKoin {
             androidContext(this@Application)
-            modules(networkModule, repositoryModule, viewModelModule)
+            modules(networkModule, repositoryModule, viewModelModule, adapterModule)
         }
     }
 }

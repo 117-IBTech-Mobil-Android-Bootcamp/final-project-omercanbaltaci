@@ -2,6 +2,8 @@ package com.example.finalproject.ui
 
 import android.text.Editable
 import android.text.TextWatcher
+import androidx.core.os.bundleOf
+import androidx.navigation.fragment.findNavController
 import com.example.finalproject.R
 import com.example.finalproject.adapters.AutocompleteListAdapter
 import com.example.finalproject.base.BaseFragment
@@ -38,6 +40,14 @@ class MainFragment : BaseFragment<MainViewModel, FragmentMainBinding>() {
                         when (id) {
                             R.id.add -> {
                                 mViewModel.prepareCurrentWeather(clickedObject.name)
+                                showToast(clickedObject.name.plus(getString(R.string.bookmarked)))
+                            }
+                            R.id.info -> {
+                                val bundle = bundleOf("locationName" to clickedObject.name)
+                                findNavController().navigate(
+                                    R.id.action_mainFragment_to_detailFragment,
+                                    bundle
+                                )
                             }
                         }
                     }
@@ -58,10 +68,17 @@ class MainFragment : BaseFragment<MainViewModel, FragmentMainBinding>() {
             pagerAdapter?.addAll(weatherList)
             dataBinding.viewPager.adapter = pagerAdapter
         })
+        mViewModel.onForecastFetched.observe(this, {
+            dataBinding.executePendingBindings()
+            it.getForecast()
+        })
         mViewModel.onAutocompleteError.observe(this, {
             showToast(getString(R.string.error_occurred))
         })
         mViewModel.onCurrentWeatherError.observe(this, {
+            showToast(getString(R.string.error_occurred))
+        })
+        mViewModel.onForecastError.observe(this, {
             showToast(getString(R.string.error_occurred))
         })
     }

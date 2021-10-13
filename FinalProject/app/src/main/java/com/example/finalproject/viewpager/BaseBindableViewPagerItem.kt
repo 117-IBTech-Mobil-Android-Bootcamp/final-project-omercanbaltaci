@@ -4,7 +4,7 @@ import android.view.View
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 
-abstract class BindableViewPagerItem<T : ViewDataBinding> : ViewPagerItem() {
+abstract class BaseBindableViewPagerItem<T : ViewDataBinding> : BaseViewPagerItem() {
     private var binding: T? = null
 
     override fun bind(view: View, position: Int) {
