@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -12,9 +14,7 @@
             type="com.example.finalproject.ui.weatherapp.model.ForecastViewStateModel" />
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -37,9 +37,12 @@
                     android:id="@+id/imageFilterView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:scaleX="0.75"
+                    android:scaleY="0.75"
+                    app:image="@{hour.condition.icon}"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/toggleGroup"
-                    app:layout_constraintStart_toEndOf="@+id/temperatureC"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:src="@mipmap/ic_113_foreground" />
 
@@ -58,7 +61,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
-                    android:text="@{hour.time}"
+                    android:text="@{hour.time.substring(11, hour.time.length)}"
                     app:layout_constraintBottom_toBottomOf="@id/timeImageView"
                     app:layout_constraintStart_toEndOf="@+id/timeImageView"
                     app:layout_constraintTop_toTopOf="@id/timeImageView"
@@ -92,26 +95,51 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/materialCardView"
                     android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginBottom="20dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginBottom="15dp"
                     android:backgroundTint="@color/autocompleteColor"
                     android:elevation="0dp"
                     app:cardCornerRadius="20dp"
-                    app:layout_constraintBottom_toTopOf="@+id/toggleGroup"
                     app:layout_constraintEnd_toEndOf="@+id/toggleGroup"
                     app:layout_constraintStart_toStartOf="@+id/toggleGroup"
                     app:layout_constraintTop_toTopOf="parent">
 
                     <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/detailsFeesLikeC"
                         style="@style/DetailsFeelsLike"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
+                        android:layout_margin="10dp"
                         android:gravity="center"
+                        app:feelsLikeNewLine="@{String.valueOf(hour.feelsLikeC)}"
+                        tools:text="Feels like:\n29°" />
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/detailsFeesLikeF"
+                        style="@style/DetailsFeelsLike"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="10dp"
+                        android:gravity="center"
+                        android:visibility="gone"
+                        app:feelsLikeNewLine="@{String.valueOf(hour.feelsLikeF)}"
                         tools:text="Feels like:\n29°" />
 
                 </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    style="@style/Condition"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{hour.condition.text}"
+                    app:layout_constraintBottom_toTopOf="@+id/toggleGroup"
+                    app:layout_constraintEnd_toEndOf="@+id/toggleGroup"
+                    app:layout_constraintStart_toStartOf="@+id/toggleGroup"
+                    app:layout_constraintTop_toBottomOf="@+id/materialCardView"
+                    tools:text="Partly cloudy" />
 
                 <com.google.android.material.button.MaterialButtonToggleGroup
                     android:id="@+id/toggleGroup"

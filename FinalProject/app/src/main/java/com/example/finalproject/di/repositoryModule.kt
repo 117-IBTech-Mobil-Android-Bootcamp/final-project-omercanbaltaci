@@ -4,5 +4,5 @@ import com.example.finalproject.repository.WeatherRepository
 import org.koin.dsl.module
 
 val repositoryModule = module {
-    factory { WeatherRepository(get()) }
+    factory { WeatherRepository(get(), get()) }
 }

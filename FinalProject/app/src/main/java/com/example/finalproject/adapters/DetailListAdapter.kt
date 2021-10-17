@@ -32,10 +32,14 @@ class DetailListAdapter(var list: List<Hour>) : RecyclerView.Adapter<DetailViewH
             holder.toggleGroup.check(R.id.celcius)
             holder.temperatureC.visible()
             holder.temperatureF.gone()
+            holder.feelsLikeC.visible()
+            holder.feelsLikeF.gone()
         } else {
             holder.toggleGroup.check(R.id.fahrenheit)
             holder.temperatureC.gone()
             holder.temperatureF.visible()
+            holder.feelsLikeC.gone()
+            holder.feelsLikeF.visible()
         }
     }
 
@@ -47,6 +51,8 @@ class DetailViewHolder(private val binding: RowDetailBinding) :
     var toggleGroup: MaterialButtonToggleGroup = binding.toggleGroup
     var temperatureC: TextView = binding.temperatureC
     var temperatureF: TextView = binding.temperatureF
+    var feelsLikeC: TextView = binding.detailsFeesLikeC
+    var feelsLikeF: TextView = binding.detailsFeesLikeF
 
     fun populate(hour: Hour) {
         binding.hour = hour
@@ -55,11 +61,15 @@ class DetailViewHolder(private val binding: RowDetailBinding) :
         binding.celcius.setOnClickListener {
             binding.temperatureC.visible()
             binding.temperatureF.gone()
+            binding.detailsFeesLikeC.visible()
+            binding.detailsFeesLikeF.gone()
             hour.isCelsiusSelected = false
         }
         binding.fahrenheit.setOnClickListener {
             binding.temperatureC.gone()
             binding.temperatureF.visible()
+            binding.detailsFeesLikeC.gone()
+            binding.detailsFeesLikeF.visible()
             hour.isCelsiusSelected = true
         }
         binding.root.setOnClickListener {

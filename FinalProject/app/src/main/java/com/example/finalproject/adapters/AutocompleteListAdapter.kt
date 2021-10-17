@@ -8,7 +8,7 @@ import android.widget.ArrayAdapter
 import androidx.annotation.LayoutRes
 import androidx.databinding.DataBindingUtil
 import com.example.finalproject.R
-import com.example.finalproject.base.BaseListViewItemClickListener
+import com.example.finalproject.base.BaseViewItemClickListener
 import com.example.finalproject.databinding.AutocompleteListItemBinding
 import com.example.finalproject.ui.weatherapp.model.Autocomplete
 
@@ -20,12 +20,12 @@ open class AutocompleteListAdapter(
     ViewHolder.LAYOUT,
     list
 ) {
-    private var itemClickListener: BaseListViewItemClickListener<Autocomplete>? = null
+    private var itemClickListener: BaseViewItemClickListener<Autocomplete>? = null
 
     constructor(
         context: Context,
         list: List<Autocomplete>,
-        itemClickListener: BaseListViewItemClickListener<Autocomplete>
+        itemClickListener: BaseViewItemClickListener<Autocomplete>
     ) : this(context, list) {
         this.itemClickListener = itemClickListener
     }
@@ -48,6 +48,11 @@ open class AutocompleteListAdapter(
         )
         dataBinding.autocomplete = autocomplete
 
+        dataBinding.root.setOnClickListener {
+            if (autocomplete != null) {
+                itemClickListener!!.onItemClicked(autocomplete, it.id)
+            }
+        }
         dataBinding.add.setOnClickListener {
             if (autocomplete != null) {
                 itemClickListener!!.onItemClicked(autocomplete, it.id)

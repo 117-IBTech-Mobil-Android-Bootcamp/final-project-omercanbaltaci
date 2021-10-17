@@ -1,6 +1,8 @@
 package com.example.finalproject.ui.weatherapp.model
 
+import androidx.room.ColumnInfo
+
 data class Location(
-    val name: String,
-    val region: String
+    @ColumnInfo(name = "name") val name: String,
+    @ColumnInfo(name = "region") val region: String
 )

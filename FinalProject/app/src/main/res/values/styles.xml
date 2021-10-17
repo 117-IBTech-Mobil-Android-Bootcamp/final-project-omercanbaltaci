@@ -15,7 +15,7 @@
 
     <style name="Temperature" parent="@style/Widget.AppCompat.TextView">
         <item name="fontFamily">@font/roboto_bold</item>
-        <item name="android:textSize">100sp</item>
+        <item name="android:textSize">85sp</item>
         <item name="android:textColor">@color/appDarkGray</item>
     </style>
 
