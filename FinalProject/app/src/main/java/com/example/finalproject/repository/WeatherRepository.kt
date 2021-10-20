@@ -9,6 +9,9 @@ import com.example.finalproject.network.response.DBCurrentResponse
 import com.example.finalproject.network.response.ForecastResponse
 import com.example.finalproject.ui.weatherapp.model.ResultCurrent
 import com.example.finalproject.util.API_KEY
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
 
 class WeatherRepository(private val api: WeatherAPI, private val resultDao: ResultDAO) {
     suspend fun getAutocompleteFromRemote(q: String): Result<AutocompleteResponse> {
@@ -45,11 +48,24 @@ class WeatherRepository(private val api: WeatherAPI, private val resultDao: Resu
         return DBCurrentResponse(results)
     }
 
-    suspend fun getSingleResultAsync(name: String, region: String): ResultCurrent? {
-        return resultDao.fetchSingleResult(name, region)
+    fun getResults(): Flow<DBCurrentResponse> = flow {
+        emit(DBCurrentResponse(resultDao.fetchResults()))
     }
 
-    suspend fun deleteDataAsync(name: String, region: String): Int {
-        return resultDao.deleteResult(name, region)
+    fun getSingleResultAsync(name: String, region: String): Flow<ResultCurrent?> = flow {
+        emit(resultDao.fetchSingleResult(name, region))
     }
+
+    fun deleteDataAsync(name: String, region: String): Flow<Result<Int>> = flow {
+        emit(Result.Success(resultDao.deleteResult(name, region)))
+    }
+
+    fun refreshLocations() = flow {
+        val weatherRepository = WeatherRepository(api, resultDao)
+        emit(Result.Progress(null))
+        weatherRepository.getResultsAsync().resultCurrentList.forEach {
+            getCurrentWeatherFromRemote(it.location.name)
+        }
+        emit(Result.Success(null))
+    }.catch { emit(Result.Error("")) }
 }

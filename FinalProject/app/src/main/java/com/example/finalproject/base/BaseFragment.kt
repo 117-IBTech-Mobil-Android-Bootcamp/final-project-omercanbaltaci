@@ -24,17 +24,16 @@ abstract class BaseFragment<VM : ViewModel, DB : ViewDataBinding> : Fragment(), 
         return dataBinding.root
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        observeLiveData()
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         prepareView()
-        //observeLiveData()
 
         showToast(shouldCheckInternetConnection().toString())
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        observeLiveData()
     }
 
     abstract fun getLayoutID(): Int

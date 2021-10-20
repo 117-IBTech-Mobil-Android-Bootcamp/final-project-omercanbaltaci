@@ -1,15 +1,13 @@
 package com.example.finalproject.ui.weatherapp.viewmodel
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.finalproject.Result
 import com.example.finalproject.network.response.CurrentResponse
 import com.example.finalproject.repository.WeatherRepository
 import com.example.finalproject.ui.weatherapp.model.CurrentWeatherViewStateModel
 import com.example.finalproject.ui.weatherapp.model.ForecastViewStateModel
 import com.example.finalproject.ui.weatherapp.model.MainViewStateModel
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class MainViewModel(private val weatherRepository: WeatherRepository) : ViewModel() {
@@ -19,9 +17,20 @@ class MainViewModel(private val weatherRepository: WeatherRepository) : ViewMode
     val onAutocompleteError = MutableLiveData<Unit>()
     val onCurrentWeatherError = MutableLiveData<Unit>()
     val onForecastError = MutableLiveData<Unit>()
-    val onSingleResultFetched = MutableLiveData<Boolean>()
-    val onResultDeleteFetched = MutableLiveData<Int>()
-    val onNewCurrentWeatherFetched = MutableLiveData<Unit>()
+
+    private val _onSingleResultFetched = MutableLiveData<Boolean>()
+    val onSingleResultFetched: LiveData<Boolean>
+        get() = _onSingleResultFetched
+
+    private val _onResultDelete = MutableLiveData<Int>()
+    val onResultDelete: LiveData<Int>
+        get() = _onResultDelete
+
+    private val _refreshCurrent = weatherRepository
+        .refreshLocations()
+        .asLiveData()
+    val refreshCurrent: LiveData<Result<out Nothing?>>
+        get() = _refreshCurrent
 
     fun prepareAutocomplete(q: String) {
         viewModelScope.launch {
@@ -34,7 +43,7 @@ class MainViewModel(private val weatherRepository: WeatherRepository) : ViewMode
         }
     }
 
-    fun prepareCurrentWeather(q: String) {
+    private fun prepareCurrentWeather(q: String) {
         viewModelScope.launch {
             when (val currentWeatherResponse = weatherRepository.getCurrentWeatherFromRemote(q)) {
                 is Result.Success -> {
@@ -59,42 +68,30 @@ class MainViewModel(private val weatherRepository: WeatherRepository) : ViewMode
 
     fun prepareResult(name: String, region: String, fullName: String) {
         viewModelScope.launch {
-            val result = weatherRepository.getSingleResultAsync(name, region)
-            if (result != null) {
-                onSingleResultFetched.value = true
-            } else {
-                onSingleResultFetched.value = false
-                prepareCurrentWeather(fullName)
+            weatherRepository.getSingleResultAsync(name, region).collect {
+                if (it != null) {
+                    _onSingleResultFetched.value = true
+                } else {
+                    _onSingleResultFetched.value = false
+                    prepareCurrentWeather(fullName)
+                }
             }
         }
     }
 
     fun deleteResult(name: String, region: String) {
         viewModelScope.launch {
-            onResultDeleteFetched.value = weatherRepository.deleteDataAsync(name, region)
+            weatherRepository.deleteDataAsync(name, region).collect {
+                _onResultDelete.value = it.data!!
+            }
         }
     }
 
     fun prepareCurrentsFromDB() {
         viewModelScope.launch {
-            val listFetchedFromDB = weatherRepository.getResultsAsync()
-            listFetchedFromDB.resultCurrentList.forEach {
+            weatherRepository.getResultsAsync().resultCurrentList.forEach {
                 onCurrentWeatherFetched.value =
                     CurrentWeatherViewStateModel(CurrentResponse(it.location, it.current))
-            }
-
-            delay(3000)
-
-            onNewCurrentWeatherFetched.value = Unit
-            listFetchedFromDB.resultCurrentList.forEach {
-                when (val newCurrentWeatherResponse =
-                    weatherRepository.getCurrentWeatherFromRemote(it.location.name)) {
-                    is Result.Success -> {
-                        onCurrentWeatherFetched.value =
-                            CurrentWeatherViewStateModel(newCurrentWeatherResponse.data!!)
-                    }
-                    is Result.Error -> onCurrentWeatherError.value = Unit
-                }
             }
         }
     }
