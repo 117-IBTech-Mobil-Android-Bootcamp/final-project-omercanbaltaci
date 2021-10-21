@@ -9,52 +9,43 @@ import com.example.finalproject.network.response.DBCurrentResponse
 import com.example.finalproject.network.response.ForecastResponse
 import com.example.finalproject.ui.weatherapp.model.ResultCurrent
 import com.example.finalproject.util.API_KEY
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
 
 class WeatherRepository(private val api: WeatherAPI, private val resultDao: ResultDAO) {
-    suspend fun getAutocompleteFromRemote(q: String): Result<AutocompleteResponse> {
+    fun getAutocomplete(q: String): Flow<Result<AutocompleteResponse>> = flow {
         val autocompleteResponse = AutocompleteResponse(api.getAutocomplete(API_KEY, q))
-        return Result.Success(autocompleteResponse)
-    }
+        emit(Result.Success(autocompleteResponse))
+    }.flowOn(Dispatchers.IO)
 
-    suspend fun getCurrentWeatherFromRemote(q: String): Result<CurrentResponse> {
+    fun getCurrentWeatherFromRemote(q: String): Flow<Result<CurrentResponse>> = flow {
         val currentResponse = api.getCurrentWeather(API_KEY, q)
-        return if (currentResponse != null) {
+        if (currentResponse != null) {
             insertDataAsync(
-                ResultCurrent(
-                    currentResponse.location,
-                    currentResponse.current,
-                    false
-                )
-            )
-            Result.Success(currentResponse)
-        } else Result.Error("An error occurred.")
-    }
+                ResultCurrent(currentResponse.location, currentResponse.current, false)
+            ).single()
+            emit(Result.Success(currentResponse))
+        } else emit(Result.Error("An error occurred."))
+    }.flowOn(Dispatchers.IO)
 
-    suspend fun getForecastFromRemote(q: String): Result<ForecastResponse> {
+    fun getForecastFromRemote(q: String): Flow<Result<ForecastResponse>> = flow {
         val forecastResponse = api.getForecast(API_KEY, q)
-        return if (forecastResponse != null) {
-            Result.Success(forecastResponse)
-        } else Result.Error("An error occurred.")
-    }
+        if (forecastResponse != null) emit(Result.Success(forecastResponse))
+        else emit(Result.Error("An error occured"))
+    }.flowOn(Dispatchers.IO)
 
-    private suspend fun insertDataAsync(resultCurrent: ResultCurrent) =
+    private fun insertDataAsync(resultCurrent: ResultCurrent) = flow {
         resultDao.insertResult(resultCurrent)
-
-    suspend fun getResultsAsync(): DBCurrentResponse {
-        val results = resultDao.fetchResults()
-        return DBCurrentResponse(results)
+        emit(Result.Success(null))
     }
 
-    fun getResults(): Flow<DBCurrentResponse> = flow {
+    fun getResultsAsync(): Flow<DBCurrentResponse> = flow {
         emit(DBCurrentResponse(resultDao.fetchResults()))
-    }
+    }.flowOn(Dispatchers.IO)
 
     fun getSingleResultAsync(name: String, region: String): Flow<ResultCurrent?> = flow {
         emit(resultDao.fetchSingleResult(name, region))
-    }
+    }.flowOn(Dispatchers.IO)
 
     fun deleteDataAsync(name: String, region: String): Flow<Result<Int>> = flow {
         emit(Result.Success(resultDao.deleteResult(name, region)))
@@ -63,8 +54,10 @@ class WeatherRepository(private val api: WeatherAPI, private val resultDao: Resu
     fun refreshLocations() = flow {
         val weatherRepository = WeatherRepository(api, resultDao)
         emit(Result.Progress(null))
-        weatherRepository.getResultsAsync().resultCurrentList.forEach {
-            getCurrentWeatherFromRemote(it.location.name)
+        weatherRepository.getResultsAsync().collect { dbCurrentResponse ->
+            dbCurrentResponse.resultCurrentList.forEach {
+                getCurrentWeatherFromRemote(it.location.name).single()
+            }
         }
         emit(Result.Success(null))
     }.catch { emit(Result.Error("")) }

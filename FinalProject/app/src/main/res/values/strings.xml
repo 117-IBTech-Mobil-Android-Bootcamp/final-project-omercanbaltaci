@@ -5,4 +5,5 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="error_occurred">An error occurred.</string>
     <string name="no_location_has_been_bookmarked">No location has been bookmarked.</string>
+    <string name="no_connection">No connection.</string>
 </resources>

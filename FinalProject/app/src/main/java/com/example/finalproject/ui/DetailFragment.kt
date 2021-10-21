@@ -5,9 +5,14 @@ import com.example.finalproject.adapters.DetailListAdapter
 import com.example.finalproject.base.BaseFragment
 import com.example.finalproject.databinding.FragmentDetailBinding
 import com.example.finalproject.ui.weatherapp.viewmodel.MainViewModel
+import com.example.finalproject.util.ConnectionLiveData
+import com.example.finalproject.util.gone
+import com.example.finalproject.util.visible
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class DetailFragment : BaseFragment<MainViewModel, FragmentDetailBinding>() {
+    private lateinit var cld: ConnectionLiveData
+
     override val mViewModel: MainViewModel by viewModel()
 
     override fun getLayoutID(): Int = R.layout.fragment_detail
@@ -21,6 +26,19 @@ class DetailFragment : BaseFragment<MainViewModel, FragmentDetailBinding>() {
     }
 
     override fun prepareView() {
-        mViewModel.prepareForecast(arguments?.get("locationName").toString())
+        cld = ConnectionLiveData(requireActivity().application)
+        cld.observe(requireActivity(), { isConnected ->
+            when (isConnected) {
+                true -> {
+                    dataBinding.detailNotification.gone()
+                    dataBinding.detailRV.visible()
+                    mViewModel.prepareForecast(arguments?.get("locationName").toString())
+                }
+                else -> {
+                    dataBinding.detailRV.gone()
+                    dataBinding.detailNotification.visible()
+                }
+            }
+        })
     }
 }

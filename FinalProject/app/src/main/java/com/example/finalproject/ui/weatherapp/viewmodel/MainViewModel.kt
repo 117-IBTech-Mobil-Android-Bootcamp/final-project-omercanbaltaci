@@ -11,12 +11,17 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class MainViewModel(private val weatherRepository: WeatherRepository) : ViewModel() {
-    val onAutocompleteFetched = MutableLiveData<MainViewStateModel>()
-    val onCurrentWeatherFetched = MutableLiveData<CurrentWeatherViewStateModel>()
-    val onForecastFetched = MutableLiveData<ForecastViewStateModel>()
-    val onAutocompleteError = MutableLiveData<Unit>()
-    val onCurrentWeatherError = MutableLiveData<Unit>()
-    val onForecastError = MutableLiveData<Unit>()
+    private val _onAutocompleteFetched = MutableLiveData<MainViewStateModel>()
+    val onAutocompleteFetched: LiveData<MainViewStateModel>
+        get() = _onAutocompleteFetched
+
+    private val _onCurrentWeatherFetched = MutableLiveData<CurrentWeatherViewStateModel>()
+    val onCurrentWeatherFetched: LiveData<CurrentWeatherViewStateModel>
+        get() = _onCurrentWeatherFetched
+
+    private val _onForecastFetched = MutableLiveData<ForecastViewStateModel>()
+    val onForecastFetched: LiveData<ForecastViewStateModel>
+        get() = _onForecastFetched
 
     private val _onSingleResultFetched = MutableLiveData<Boolean>()
     val onSingleResultFetched: LiveData<Boolean>
@@ -32,36 +37,42 @@ class MainViewModel(private val weatherRepository: WeatherRepository) : ViewMode
     val refreshCurrent: LiveData<Result<out Nothing?>>
         get() = _refreshCurrent
 
+    val onAutocompleteError = MutableLiveData<Unit>()
+    val onCurrentWeatherError = MutableLiveData<Unit>()
+    val onForecastError = MutableLiveData<Unit>()
+
     fun prepareAutocomplete(q: String) {
         viewModelScope.launch {
-            when (val remoteResponse = weatherRepository.getAutocompleteFromRemote(q)) {
-                is Result.Success -> {
-                    onAutocompleteFetched.value = MainViewStateModel(remoteResponse.data!!)
+            weatherRepository.getAutocomplete(q).collect {
+                when (it) {
+                    is Result.Success -> _onAutocompleteFetched.value =
+                        MainViewStateModel(it.data!!)
+                    else -> onAutocompleteError.value = Unit
                 }
-                is Result.Error -> onAutocompleteError.value = Unit
             }
         }
     }
 
     private fun prepareCurrentWeather(q: String) {
         viewModelScope.launch {
-            when (val currentWeatherResponse = weatherRepository.getCurrentWeatherFromRemote(q)) {
-                is Result.Success -> {
-                    onCurrentWeatherFetched.value =
-                        CurrentWeatherViewStateModel(currentWeatherResponse.data!!)
+            weatherRepository.getCurrentWeatherFromRemote(q).collect {
+                when (it) {
+                    is Result.Success -> _onCurrentWeatherFetched.value =
+                        CurrentWeatherViewStateModel(it.data!!)
+                    else -> onCurrentWeatherError.value = Unit
                 }
-                is Result.Error -> onCurrentWeatherError.value = Unit
             }
         }
     }
 
     fun prepareForecast(q: String) {
         viewModelScope.launch {
-            when (val forecastResponse = weatherRepository.getForecastFromRemote(q)) {
-                is Result.Success -> {
-                    onForecastFetched.value = ForecastViewStateModel(forecastResponse.data!!)
+            weatherRepository.getForecastFromRemote(q).collect {
+                when (it) {
+                    is Result.Success -> _onForecastFetched.value =
+                        ForecastViewStateModel(it.data!!)
+                    else -> onForecastError.value = Unit
                 }
-                is Result.Error -> onForecastError.value = Unit
             }
         }
     }
@@ -89,9 +100,11 @@ class MainViewModel(private val weatherRepository: WeatherRepository) : ViewMode
 
     fun prepareCurrentsFromDB() {
         viewModelScope.launch {
-            weatherRepository.getResultsAsync().resultCurrentList.forEach {
-                onCurrentWeatherFetched.value =
-                    CurrentWeatherViewStateModel(CurrentResponse(it.location, it.current))
+            weatherRepository.getResultsAsync().collect { dbCurrentResponse ->
+                dbCurrentResponse.resultCurrentList.forEach {
+                    _onCurrentWeatherFetched.value =
+                        CurrentWeatherViewStateModel(CurrentResponse(it.location, it.current))
+                }
             }
         }
     }

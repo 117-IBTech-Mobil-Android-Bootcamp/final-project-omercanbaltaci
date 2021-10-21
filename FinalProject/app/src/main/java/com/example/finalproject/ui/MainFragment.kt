@@ -72,11 +72,6 @@ class MainFragment : BaseFragment<MainViewModel, FragmentMainBinding>() {
             dataBinding.viewPager.adapter?.notifyItemInserted(weatherList.size - 1)
         })
 
-        mViewModel.onForecastFetched.observe(this, {
-            dataBinding.executePendingBindings()
-            it.getForecast()
-        })
-
         mViewModel.onSingleResultFetched.observe(this, {
             if (it) showToast("This location is already bookmarked.")
             else showToast("Location has been bookmarked.")
