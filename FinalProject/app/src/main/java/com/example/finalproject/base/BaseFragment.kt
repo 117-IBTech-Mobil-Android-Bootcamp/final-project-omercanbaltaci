@@ -9,7 +9,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
-import com.example.finalproject.util.showToast
 
 abstract class BaseFragment<VM : ViewModel, DB : ViewDataBinding> : Fragment(), FragmentActions {
     abstract val mViewModel: VM
@@ -27,8 +26,6 @@ abstract class BaseFragment<VM : ViewModel, DB : ViewDataBinding> : Fragment(), 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         prepareView()
-
-        showToast(shouldCheckInternetConnection().toString())
     }
 
     override fun onAttach(context: Context) {

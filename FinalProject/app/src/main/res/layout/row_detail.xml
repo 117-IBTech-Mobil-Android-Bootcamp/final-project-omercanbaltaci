@@ -155,6 +155,7 @@
                     app:checkedButton="@id/celcius"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:selectionRequired="true"
                     app:singleSelection="true">
 
                     <Button

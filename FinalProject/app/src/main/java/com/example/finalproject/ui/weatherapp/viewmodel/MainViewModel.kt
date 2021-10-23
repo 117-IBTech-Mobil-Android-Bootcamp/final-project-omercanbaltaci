@@ -1,6 +1,10 @@
 package com.example.finalproject.ui.weatherapp.viewmodel
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.finalproject.Outcome
 import com.example.finalproject.Result
 import com.example.finalproject.network.response.CurrentResponse
 import com.example.finalproject.repository.WeatherRepository
@@ -31,10 +35,8 @@ class MainViewModel(private val weatherRepository: WeatherRepository) : ViewMode
     val onResultDelete: LiveData<Int>
         get() = _onResultDelete
 
-    private val _refreshCurrent = weatherRepository
-        .refreshLocations()
-        .asLiveData()
-    val refreshCurrent: LiveData<Result<out Nothing?>>
+    private val _refreshCurrent = MutableLiveData<Int>()
+    val refreshCurrent: LiveData<Int>
         get() = _refreshCurrent
 
     val onAutocompleteError = MutableLiveData<Unit>()
@@ -45,6 +47,8 @@ class MainViewModel(private val weatherRepository: WeatherRepository) : ViewMode
         viewModelScope.launch {
             weatherRepository.getAutocomplete(q).collect {
                 when (it) {
+                    is Result.Progress -> {
+                    }
                     is Result.Success -> _onAutocompleteFetched.value =
                         MainViewStateModel(it.data!!)
                     else -> onAutocompleteError.value = Unit
@@ -57,6 +61,8 @@ class MainViewModel(private val weatherRepository: WeatherRepository) : ViewMode
         viewModelScope.launch {
             weatherRepository.getCurrentWeatherFromRemote(q).collect {
                 when (it) {
+                    is Result.Progress -> {
+                    }
                     is Result.Success -> _onCurrentWeatherFetched.value =
                         CurrentWeatherViewStateModel(it.data!!)
                     else -> onCurrentWeatherError.value = Unit
@@ -68,11 +74,9 @@ class MainViewModel(private val weatherRepository: WeatherRepository) : ViewMode
     fun prepareForecast(q: String) {
         viewModelScope.launch {
             weatherRepository.getForecastFromRemote(q).collect {
-                when (it) {
-                    is Result.Success -> _onForecastFetched.value =
-                        ForecastViewStateModel(it.data!!)
-                    else -> onForecastError.value = Unit
-                }
+                if (it.status == Outcome.SUCCESS) _onForecastFetched.value =
+                    ForecastViewStateModel(it.data!!)
+                else onForecastError.value = Unit
             }
         }
     }
@@ -104,6 +108,18 @@ class MainViewModel(private val weatherRepository: WeatherRepository) : ViewMode
                 dbCurrentResponse.resultCurrentList.forEach {
                     _onCurrentWeatherFetched.value =
                         CurrentWeatherViewStateModel(CurrentResponse(it.location, it.current))
+                }
+            }
+        }
+    }
+
+    fun refreshLocations() {
+        viewModelScope.launch {
+            weatherRepository.refreshLocations().collect {
+                when (it) {
+                    is Result.Progress -> _refreshCurrent.value = 0
+                    is Result.Success -> _refreshCurrent.value = 1
+                    else -> _refreshCurrent.value = 2
                 }
             }
         }

@@ -9,7 +9,6 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 
-
 class ConnectionLiveData(private val connectivityManager: ConnectivityManager) :
     LiveData<Boolean>() {
     constructor(application: Application) : this(

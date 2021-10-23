@@ -142,6 +142,7 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="@+id/temperatureC"
                     app:layout_constraintStart_toStartOf="@+id/temperatureC"
+                    app:selectionRequired="true"
                     app:singleSelection="true">
 
                     <Button

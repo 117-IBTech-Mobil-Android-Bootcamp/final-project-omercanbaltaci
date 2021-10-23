@@ -34,10 +34,6 @@ class DetailFragment : BaseFragment<MainViewModel, FragmentDetailBinding>() {
                     dataBinding.detailRV.visible()
                     mViewModel.prepareForecast(arguments?.get("locationName").toString())
                 }
-                else -> {
-                    dataBinding.detailRV.gone()
-                    dataBinding.detailNotification.visible()
-                }
             }
         })
     }

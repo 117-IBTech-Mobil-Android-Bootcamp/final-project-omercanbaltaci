@@ -1,11 +1,9 @@
 package com.example.finalproject.ui
 
-import android.text.Editable
-import android.text.TextWatcher
 import androidx.core.os.bundleOf
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.finalproject.R
-import com.example.finalproject.Result
 import com.example.finalproject.adapters.AutocompleteListAdapter
 import com.example.finalproject.adapters.ViewPagerAdapter
 import com.example.finalproject.base.BaseFragment
@@ -14,10 +12,12 @@ import com.example.finalproject.databinding.FragmentMainBinding
 import com.example.finalproject.ui.weatherapp.model.Autocomplete
 import com.example.finalproject.ui.weatherapp.model.ResultCurrent
 import com.example.finalproject.ui.weatherapp.viewmodel.MainViewModel
-import com.example.finalproject.util.ConnectionLiveData
-import com.example.finalproject.util.gone
-import com.example.finalproject.util.showToast
-import com.example.finalproject.util.visible
+import com.example.finalproject.util.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainFragment : BaseFragment<MainViewModel, FragmentMainBinding>() {
@@ -81,25 +81,33 @@ class MainFragment : BaseFragment<MainViewModel, FragmentMainBinding>() {
             if (it > 0) showToast("Location has been deleted.")
         })
 
-        cld = ConnectionLiveData(requireActivity().application)
-        cld.observe(requireActivity(), { isConnected ->
-            when (isConnected) {
-                true -> {
-                    mViewModel.refreshCurrent.observe(this, {
-                        when (it) {
-                            is Result.Progress -> showToast("Trying to refresh locations.")
-                            is Result.Success -> {
-                                val size = weatherList.size
-                                weatherList.clear()
-                                dataBinding.viewPager.adapter?.notifyItemRangeRemoved(0, size)
-                                mViewModel.prepareCurrentsFromDB()
+        if (shouldCheckInternetConnection()) {
+            cld = ConnectionLiveData(requireActivity().application)
+            cld.observe(requireActivity(), { isConnected ->
+                when (isConnected) {
+                    true -> {
+                        mViewModel.refreshLocations()
+
+                        mViewModel.refreshCurrent.observe(this, {
+                            when (it) {
+                                0 -> showToast(getString(R.string.refreshing_locations))
+                                1 -> {
+                                    val size = weatherList.size
+                                    weatherList.clear()
+                                    dataBinding.viewPager.adapter?.notifyItemRangeRemoved(0, size)
+                                    mViewModel.prepareCurrentsFromDB()
+                                    showToast(getString(R.string.locatins_refreshed))
+                                }
+                                2 -> showToast(getString(R.string.no_internet))
                             }
-                            is Result.Error -> showToast("No internet.")
-                        }
-                    })
+                        })
+
+
+                    }
+                    else -> showToast(getString(R.string.connection_lost))
                 }
-            }
-        })
+            })
+        }
 
         // Error observation
         mViewModel.onAutocompleteError.observe(this, {
@@ -115,6 +123,8 @@ class MainFragment : BaseFragment<MainViewModel, FragmentMainBinding>() {
         })
     }
 
+    @FlowPreview
+    @ExperimentalCoroutinesApi
     override fun prepareView() {
         dataBinding.viewPager.adapter = ViewPagerAdapter(
             weatherList,
@@ -146,7 +156,7 @@ class MainFragment : BaseFragment<MainViewModel, FragmentMainBinding>() {
             dataBinding.viewPager.visible()
         }
 
-        dataBinding.autoComplete.addTextChangedListener(object : TextWatcher {
+        /*dataBinding.autoComplete.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -154,7 +164,12 @@ class MainFragment : BaseFragment<MainViewModel, FragmentMainBinding>() {
             }
 
             override fun afterTextChanged(p0: Editable?) {}
-        })
+        })*/
+
+        dataBinding.autoComplete.textChanges()
+            .debounce(300)
+            .onEach { mViewModel.prepareAutocomplete(it.toString()) }
+            .launchIn(lifecycleScope)
     }
 
     fun goToDetailsWithBundle(locationName: String) {

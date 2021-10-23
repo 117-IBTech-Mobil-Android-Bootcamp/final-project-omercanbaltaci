@@ -6,4 +6,8 @@
     <string name="error_occurred">An error occurred.</string>
     <string name="no_location_has_been_bookmarked">No location has been bookmarked.</string>
     <string name="no_connection">No connection.</string>
+    <string name="refreshing_locations">Trying to refresh locations.</string>
+    <string name="locatins_refreshed">Locations have been refreshed.</string>
+    <string name="no_internet">No internet.</string>
+    <string name="connection_lost">Connection has been lost.</string>
 </resources>
