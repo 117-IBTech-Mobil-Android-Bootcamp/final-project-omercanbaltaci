@@ -12,7 +12,6 @@ import org.junit.Test
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito
-import java.lang.RuntimeException
 
 class WeatherRepositoryTest {
     private val apiMock: WeatherAPI = Mockito.mock(WeatherAPI::class.java)
@@ -20,15 +19,40 @@ class WeatherRepositoryTest {
     private val forecastResponseMock: ForecastResponse = Mockito.mock(ForecastResponse::class.java)
 
     @Test
-    fun testGetForecastFromRemote_shouldReturnError() {
+    fun testGetForecastFromRemote_shouldReturnErrorIfThrowsException() {
         runBlocking {
             // GIVEN
-            val key = ""
-            val q = ""
+            val key = anyString()
+            val q = anyString()
+            val days = anyInt()
+            val aqi = anyString()
+            val alert = anyString()
 
             // WHEN
             val repository = WeatherRepository(apiMock, daoMock)
-            whenever(apiMock.getForecast(key, q)).thenThrow(RuntimeException())
+            whenever(apiMock.getForecast(key, q, days, aqi, alert)).thenThrow(RuntimeException())
+
+            // THEN
+            val flow: Flow<Outcome<ForecastResponse>> = repository.getForecastFromRemote(q)
+            flow.collect {
+                assert(it.status == Outcome.ERROR)
+            }
+        }
+    }
+
+    @Test
+    fun testGetForecastFromRemote_shouldReturnErrorIfNull() {
+        runBlocking {
+            // GIVEN
+            val key = anyString()
+            val q = anyString()
+            val days = anyInt()
+            val aqi = anyString()
+            val alert = anyString()
+
+            // WHEN
+            val repository = WeatherRepository(apiMock, daoMock)
+            whenever(apiMock.getForecast(key, q, days, aqi, alert)).thenReturn(null)
 
             // THEN
             val flow: Flow<Outcome<ForecastResponse>> = repository.getForecastFromRemote(q)

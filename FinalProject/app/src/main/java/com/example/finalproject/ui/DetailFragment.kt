@@ -9,10 +9,13 @@ import com.example.finalproject.util.ConnectionLiveData
 import com.example.finalproject.util.gone
 import com.example.finalproject.util.visible
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class DetailFragment : BaseFragment<MainViewModel, FragmentDetailBinding>() {
-    private lateinit var cld: ConnectionLiveData
+class DetailFragment : BaseFragment<MainViewModel, FragmentDetailBinding>(), KoinComponent {
+    //private lateinit var cld: ConnectionLiveData
 
+    private val cld: ConnectionLiveData by inject()
     override val mViewModel: MainViewModel by viewModel()
 
     override fun getLayoutID(): Int = R.layout.fragment_detail
@@ -26,7 +29,7 @@ class DetailFragment : BaseFragment<MainViewModel, FragmentDetailBinding>() {
     }
 
     override fun prepareView() {
-        cld = ConnectionLiveData(requireActivity().application)
+        //cld = ConnectionLiveData(requireActivity().application)
         cld.observe(requireActivity(), { isConnected ->
             when (isConnected) {
                 true -> {

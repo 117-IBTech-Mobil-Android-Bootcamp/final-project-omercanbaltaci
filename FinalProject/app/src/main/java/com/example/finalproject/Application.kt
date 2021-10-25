@@ -4,8 +4,6 @@ import android.app.Application
 import androidx.work.*
 import com.example.finalproject.di.*
 import com.example.finalproject.workmanager.RefreshWorker
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import java.util.concurrent.TimeUnit
@@ -15,7 +13,13 @@ class Application : Application() {
         super.onCreate()
         startKoin {
             androidContext(this@Application)
-            modules(networkModule, repositoryModule, viewModelModule, dbModule)
+            modules(
+                networkModule,
+                repositoryModule,
+                viewModelModule,
+                dbModule,
+                connectionLiveDataModule
+            )
         }
 
         refreshDB()

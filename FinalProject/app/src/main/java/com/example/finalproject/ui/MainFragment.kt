@@ -19,11 +19,14 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class MainFragment : BaseFragment<MainViewModel, FragmentMainBinding>() {
+class MainFragment : BaseFragment<MainViewModel, FragmentMainBinding>(), KoinComponent {
     private var weatherList = mutableListOf<ResultCurrent>()
-    private lateinit var cld: ConnectionLiveData
+    //private lateinit var cld: ConnectionLiveData
 
+    private val cld: ConnectionLiveData by inject()
     override val mViewModel: MainViewModel by viewModel()
 
     override fun getLayoutID() = R.layout.fragment_main
@@ -82,7 +85,7 @@ class MainFragment : BaseFragment<MainViewModel, FragmentMainBinding>() {
         })
 
         if (shouldCheckInternetConnection()) {
-            cld = ConnectionLiveData(requireActivity().application)
+            //cld = ConnectionLiveData(requireActivity().application)
             cld.observe(requireActivity(), { isConnected ->
                 when (isConnected) {
                     true -> {
@@ -101,8 +104,6 @@ class MainFragment : BaseFragment<MainViewModel, FragmentMainBinding>() {
                                 2 -> showToast(getString(R.string.no_internet))
                             }
                         })
-
-
                     }
                     else -> showToast(getString(R.string.connection_lost))
                 }
@@ -155,16 +156,6 @@ class MainFragment : BaseFragment<MainViewModel, FragmentMainBinding>() {
             dataBinding.notificationText.gone()
             dataBinding.viewPager.visible()
         }
-
-        /*dataBinding.autoComplete.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                if (p0!!.length >= 3) mViewModel.prepareAutocomplete(p0.toString())
-            }
-
-            override fun afterTextChanged(p0: Editable?) {}
-        })*/
 
         dataBinding.autoComplete.textChanges()
             .debounce(300)
