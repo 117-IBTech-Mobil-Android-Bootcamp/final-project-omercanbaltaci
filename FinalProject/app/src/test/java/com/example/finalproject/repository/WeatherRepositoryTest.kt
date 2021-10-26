@@ -19,7 +19,7 @@ class WeatherRepositoryTest {
     private val forecastResponseMock: ForecastResponse = Mockito.mock(ForecastResponse::class.java)
 
     @Test
-    fun testGetForecastFromRemote_shouldReturnErrorIfThrowsException() {
+    fun testGetForecastFromRemote_shouldReturnErrorIfExceptionIsThrown() {
         runBlocking {
             // GIVEN
             val key = anyString()
@@ -41,7 +41,7 @@ class WeatherRepositoryTest {
     }
 
     @Test
-    fun testGetForecastFromRemote_shouldReturnErrorIfNull() {
+    fun testGetForecastFromRemote_shouldReturnErrorIfResponseIsNull() {
         runBlocking {
             // GIVEN
             val key = anyString()
